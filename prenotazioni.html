@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calendario — Circoletto FASF</title>
-<meta name="description" content="Gli appuntamenti del Circoletto FASF durante l'anno, oltre a Sant'Egidio in Festa.">
+<title>Prenotazioni — Circoletto FASF</title>
+<meta name="description" content="Prenota il tuo posto agli eventi a numero limitato del Circoletto FASF: cene sociali e altri appuntamenti su prenotazione.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Calendario — Circoletto FASF">
-<meta property="og:description" content="Gli appuntamenti del Circoletto FASF durante l'anno, oltre a Sant'Egidio in Festa.">
+<meta property="og:title" content="Prenotazioni — Circoletto FASF">
+<meta property="og:description" content="Prenota il tuo posto agli eventi a numero limitato del Circoletto FASF: cene sociali e altri appuntamenti su prenotazione.">
 <meta property="og:image" content="assets/img/hero-calendario.jpg">
 <meta property="og:locale" content="it_IT">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Calendario — Circoletto FASF">
-<meta name="twitter:description" content="Gli appuntamenti del Circoletto FASF durante l'anno, oltre a Sant'Egidio in Festa.">
+<meta name="twitter:title" content="Prenotazioni — Circoletto FASF">
+<meta name="twitter:description" content="Prenota il tuo posto agli eventi a numero limitato del Circoletto FASF: cene sociali e altri appuntamenti su prenotazione.">
 <meta name="twitter:image" content="assets/img/hero-calendario.jpg">
 
 <link rel="icon" href="assets/img/logo-cf.png">
@@ -68,38 +68,80 @@
 
   <section class="page-hero hero-photo">
     <div class="photo-layer">
-      <img src="assets/img/hero-calendario.jpg" alt="Famiglie a Sant'Egidio in Festa">
+      <img src="assets/img/hero-calendario.jpg" alt="Una serata al Circoletto FASF">
     </div>
     <div class="photo-overlay"></div>
     <div class="hero-photo-content wrap">
-      <span class="eyebrow">Tutto l'anno</span>
-      <h1>Il <span class="gold">calendario</span></h1>
-      <p class="lead">Il parco del Circoletto FASF non vive solo ad agosto. Qui trovi gli appuntamenti in programma.</p>
+      <span class="eyebrow">Posti limitati</span>
+      <h1>Prenota il tuo <span class="gold">posto</span></h1>
+      <p class="lead">Alcuni appuntamenti del Circoletto FASF — come le cene sociali durante Sant'Egidio in Festa — hanno un numero di posti limitato. Qui trovi cosa è aperto alle prenotazioni in questo momento.</p>
     </div>
   </section>
 
   <section class="wrap">
-    <div class="card" style="max-width:720px;margin:0 auto;">
-      <span class="icon">🎉</span>
-      <h3 style="font-size:1.6rem;">Sant'Egidio in Festa 2026</h3>
-      <p>28 Agosto — 6 Settembre · Parco ex asilo, Via Sant'Egidio 35, Borgo Trevi (PG)</p>
-      <a class="btn btn-gold" href="sant-egidio-in-festa.html" style="margin-top:10px;">Vedi il programma →</a>
+    <div class="section-head left">
+      <span class="eyebrow">Su prenotazione</span>
+      <h2>Cosa puoi prenotare ora</h2>
+      <p>Gli eventi a numero limitato compaiono qui non appena sono aperti alle prenotazioni.</p>
+    </div>
+
+    <!--
+      TEMPLATE EVENTO — nota per chi aggiorna il sito:
+      per aggiungere un evento prenotabile, sostituisci il riquadro "nessun evento"
+      qui sotto con una o più card così, una per evento:
+
+      <div class="card">
+        <span class="eyebrow">Sabato 30 Agosto</span>
+        <h3>Cena Sociale</h3>
+        <p>Descrizione breve: cosa include, orario, eventuale prezzo a persona.</p>
+        <a class="btn btn-outline" href="#prenota">Prenota →</a>
+      </div>
+    -->
+    <div class="grid grid-3" id="prenotazioni-grid">
+      <div class="card" style="text-align:center;color:var(--muted);grid-column:1/-1;">
+        <span class="icon">🗓️</span>
+        <h3>Nessun evento aperto al momento</h3>
+        <p style="max-width:480px;margin:0 auto;">Le prossime prenotazioni — come le cene sociali di Sant'Egidio in Festa — compariranno qui appena sono confermate. Seguici su Instagram per essere avvisato per primo.</p>
+        <a class="btn btn-outline" href="https://www.instagram.com/fasf.borgotrevi" target="_blank" rel="noopener">@fasf.borgotrevi →</a>
+      </div>
     </div>
   </section>
 
-  <section class="alt">
-    <div class="wrap" style="text-align:center;">
-      <span class="eyebrow">Prossimamente</span>
-      <h2>Il resto dell'anno</h2>
-      <p style="max-width:600px;margin:0 auto 10px;">Il nostro obiettivo è far vivere il parco anche fuori dai giorni della festa. Gli appuntamenti del Circoletto FASF durante l'anno verranno aggiunti qui man mano che vengono organizzati — nel frattempo seguici su Instagram per non perderteli.</p>
-      <a class="btn btn-outline" href="https://www.instagram.com/fasf.borgotrevi" target="_blank" rel="noopener" style="margin-top:14px;">Seguici su Instagram →</a>
+  <section class="alt" id="prenota">
+    <div class="wrap" style="max-width:640px;">
+      <div class="section-head">
+        <span class="eyebrow">Richiesta di prenotazione</span>
+        <h2>Manda la tua richiesta</h2>
+        <p>Scrivi per quale evento vuoi prenotare (anche se non è ancora nell'elenco sopra) e quante persone verranno: ti confermiamo noi il posto scrivendoti o chiamandoti.</p>
+      </div>
+      <form name="prenotazioni" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="/grazie-prenotazione.html" class="form-grid">
+        <input type="hidden" name="form-name" value="prenotazioni">
+        <p style="position:absolute;left:-9999px;">
+          <label>Non compilare questo campo: <input name="bot-field"></label>
+        </p>
+        <div>
+          <label for="r-evento">Per cosa vuoi prenotare</label>
+          <input type="text" id="r-evento" name="evento" placeholder="Es. Cena sociale del 30 agosto" required>
+        </div>
+        <div>
+          <label for="r-nome">Nome e cognome</label>
+          <input type="text" id="r-nome" name="nome" placeholder="Il tuo nome" required>
+        </div>
+        <div>
+          <label for="r-contatto">Telefono o email</label>
+          <input type="text" id="r-contatto" name="contatto" placeholder="Per confermarti il posto" required>
+        </div>
+        <div>
+          <label for="r-persone">Numero di persone</label>
+          <input type="number" id="r-persone" name="persone" min="1" value="1" required>
+        </div>
+        <div>
+          <label for="r-note">Note (facoltativo)</label>
+          <textarea id="r-note" name="note" placeholder="Allergie, intolleranze, richieste particolari..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-gold">Invia prenotazione</button>
+      </form>
     </div>
-  </section>
-
-  <section class="wrap" style="text-align:center;">
-    <h2>Vuoi organizzare qualcosa <span class="gold">con noi</span>?</h2>
-    <p style="max-width:520px;margin:0 auto 24px;">Associazioni, band, realtà del territorio: se avete un'idea per il parco, scriveteci.</p>
-    <a class="btn btn-gold" href="contatti.html">Contattaci →</a>
   </section>
 
 </main>
