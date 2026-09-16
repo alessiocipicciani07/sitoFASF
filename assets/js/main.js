@@ -3,19 +3,19 @@
 document.addEventListener("DOMContentLoaded", function () {
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // menu mobile
+  // menu a schermo intero
   var toggle = document.querySelector(".nav-toggle");
-  var links = document.querySelector(".nav-links");
-  if (toggle && links) {
+  var overlay = document.querySelector(".nav-overlay");
+  if (toggle && overlay) {
     var setMenuOpen = function (open) {
-      links.classList.toggle("open", open);
+      overlay.classList.toggle("open", open);
       toggle.setAttribute("aria-expanded", open ? "true" : "false");
       document.body.classList.toggle("nav-open", open);
     };
     toggle.addEventListener("click", function () {
-      setMenuOpen(!links.classList.contains("open"));
+      setMenuOpen(!overlay.classList.contains("open"));
     });
-    links.querySelectorAll("a").forEach(function (a) {
+    overlay.querySelectorAll("a").forEach(function (a) {
       a.addEventListener("click", function () { setMenuOpen(false); });
     });
     document.addEventListener("keydown", function (e) {
