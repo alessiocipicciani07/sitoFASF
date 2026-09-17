@@ -26,8 +26,11 @@
   .btn-danger { background:none; border:1px solid rgba(255,120,120,.4); color:#ff9b9b; }
   .btn-danger:hover { background:rgba(255,120,120,.1); }
   .btn-small { padding:9px 16px; font-size:.82rem; }
+  .event-row .actions { display:flex; flex-direction:column; gap:8px; }
   #login-gate, #dash-content { display:none; }
   #login-gate.visible, #dash-content.visible { display:block; }
+  #cancel-edit-btn { display:none; }
+  #cancel-edit-btn.visible { display:inline-flex; }
 </style>
 </head>
 <body>
@@ -55,8 +58,8 @@
 
   <div id="dash-content">
     <div class="dash-card">
-      <span class="eyebrow">Nuovo evento</span>
-      <h2 style="margin-top:8px;">Pubblica un evento su prenotazione</h2>
+      <span class="eyebrow" id="form-eyebrow">Nuovo evento</span>
+      <h2 style="margin-top:8px;" id="form-title">Pubblica un evento su prenotazione</h2>
       <p>Compare sulla pagina <a href="prenotazioni.html" target="_blank" style="color:var(--gold);">Prenotazioni</a> del sito entro circa un minuto dalla pubblicazione.</p>
       <form class="form-grid" id="event-form">
         <div>
@@ -79,7 +82,10 @@
           <label for="ev-prezzo">Prezzo (facoltativo)</label>
           <input type="text" id="ev-prezzo" placeholder="Es. 15€ a persona">
         </div>
-        <button type="submit" class="btn btn-gold">Pubblica evento</button>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <button type="submit" class="btn btn-gold" id="submit-btn">Pubblica evento</button>
+          <button type="button" class="btn btn-outline" id="cancel-edit-btn">Annulla modifica</button>
+        </div>
         <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
       </form>
     </div>
@@ -87,7 +93,7 @@
     <div class="dash-card">
       <span class="eyebrow">Eventi pubblicati</span>
       <h2 style="margin-top:8px;">Elenco attuale</h2>
-      <p>Rimuovi un evento quando i posti sono esauriti o l'appuntamento è passato.</p>
+      <p>Modifica o rimuovi un evento quando i posti sono esauriti o l'appuntamento è passato.</p>
       <div id="events-list"><p style="color:var(--muted);">Caricamento…</p></div>
     </div>
   </div>
@@ -138,7 +144,10 @@
       });
   }
 
+  var currentEvents = [];
+
   function renderEvents(events) {
+    currentEvents = events || [];
     var list = document.getElementById("events-list");
     if (!events || !events.length) {
       list.innerHTML = "<p style='color:var(--muted);'>Nessun evento pubblicato al momento.</p>";
@@ -154,13 +163,52 @@
           "<span>" + escapeHtml(ev.data_label) + (ev.posti ? " · " + escapeHtml(ev.posti) : "") + (ev.prezzo ? " · " + escapeHtml(ev.prezzo) : "") + "</span>" +
           (ev.descrizione ? "<p>" + escapeHtml(ev.descrizione) + "</p>" : "") +
         "</div>" +
-        '<button type="button" class="btn btn-danger btn-small" data-id="' + escapeHtml(ev.id) + '">Elimina</button>';
-      row.querySelector("button").addEventListener("click", function () {
+        '<div class="actions">' +
+          '<button type="button" class="btn btn-outline btn-small" data-action="edit">Modifica</button>' +
+          '<button type="button" class="btn btn-danger btn-small" data-action="delete">Elimina</button>' +
+        "</div>";
+      row.querySelector('[data-action="edit"]').addEventListener("click", function () {
+        startEdit(ev);
+      });
+      row.querySelector('[data-action="delete"]').addEventListener("click", function () {
         deleteEvent(ev.id, ev.titolo);
       });
       list.appendChild(row);
     });
   }
+
+  var editingId = null;
+  var form = document.getElementById("event-form");
+  var formEyebrow = document.getElementById("form-eyebrow");
+  var formTitle = document.getElementById("form-title");
+  var submitBtn = document.getElementById("submit-btn");
+  var cancelEditBtn = document.getElementById("cancel-edit-btn");
+
+  function startEdit(ev) {
+    editingId = ev.id;
+    document.getElementById("ev-titolo").value = ev.titolo || "";
+    document.getElementById("ev-data").value = ev.data_label || "";
+    document.getElementById("ev-descrizione").value = ev.descrizione || "";
+    document.getElementById("ev-posti").value = ev.posti || "";
+    document.getElementById("ev-prezzo").value = ev.prezzo || "";
+    formEyebrow.textContent = "Modifica evento";
+    formTitle.textContent = 'Stai modificando "' + ev.titolo + '"';
+    submitBtn.textContent = "Salva modifiche";
+    cancelEditBtn.classList.add("visible");
+    form.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function stopEdit() {
+    editingId = null;
+    form.reset();
+    formEyebrow.textContent = "Nuovo evento";
+    formTitle.textContent = "Pubblica un evento su prenotazione";
+    submitBtn.textContent = "Pubblica evento";
+    cancelEditBtn.classList.remove("visible");
+    document.getElementById("form-status").textContent = "";
+  }
+
+  cancelEditBtn.addEventListener("click", stopEdit);
 
   function deleteEvent(id, titolo) {
     if (!confirm('Rimuovere "' + titolo + '" dal sito?')) return;
@@ -186,7 +234,7 @@
       .catch(function () { alert("Errore di rete, riprova."); });
   }
 
-  document.getElementById("event-form").addEventListener("submit", function (e) {
+  form.addEventListener("submit", function (e) {
     e.preventDefault();
     var status = document.getElementById("form-status");
     var evento = {
@@ -202,13 +250,18 @@
       return;
     }
 
+    var isEdit = !!editingId;
     status.style.color = "var(--gold)";
-    status.textContent = "Pubblicazione in corso…";
+    status.textContent = isEdit ? "Salvataggio in corso…" : "Pubblicazione in corso…";
+
+    var body = isEdit
+      ? { password: password, action: "update", id: editingId, evento: evento }
+      : { password: password, action: "create", evento: evento };
 
     fetch("/.netlify/functions/manage-events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password: password, action: "create", evento: evento }),
+      body: JSON.stringify(body),
     })
       .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
       .then(function (res) {
@@ -224,9 +277,10 @@
           status.textContent = "Errore: " + (res.data && res.data.error ? res.data.error : "riprova.");
           return;
         }
+        var wasEdit = isEdit;
+        stopEdit();
         status.style.color = "var(--gold)";
-        status.textContent = "Pubblicato! Sarà visibile sul sito entro circa un minuto.";
-        document.getElementById("event-form").reset();
+        status.textContent = (wasEdit ? "Modifiche salvate!" : "Pubblicato!") + " Sarà visibile sul sito entro circa un minuto.";
         renderEvents(res.data.events);
       })
       .catch(function () {
