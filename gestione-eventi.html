@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestione eventi — Circoletto FASF</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/img/logo-cf.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;0,900;1,400;1,500;1,600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .dash-wrap { max-width: 760px; margin: 0 auto; padding: 70px 24px 100px; }
+  .dash-header { display:flex; align-items:center; gap:14px; margin-bottom: 40px; }
+  .dash-header img { height: 40px; }
+  .dash-header a { color: var(--muted); text-decoration:none; font-size:.85rem; margin-left:auto; }
+  .dash-header a:hover { color: var(--gold); }
+  .dash-card { background: rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:28px; margin-bottom:24px; }
+  .event-row { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding:16px 0; border-top:1px solid rgba(255,255,255,.08); }
+  .event-row:first-child { border-top:none; }
+  .event-row .meta strong { display:block; color:var(--white); font-family:var(--font-display); font-size:1.1rem; }
+  .event-row .meta span { display:block; color:var(--gold); font-size:.8rem; margin-top:2px; }
+  .event-row .meta p { margin:6px 0 0; font-size:.85rem; }
+  .event-row button { flex:none; }
+  .btn-danger { background:none; border:1px solid rgba(255,120,120,.4); color:#ff9b9b; }
+  .btn-danger:hover { background:rgba(255,120,120,.1); }
+  .btn-small { padding:9px 16px; font-size:.82rem; }
+  #login-gate, #dash-content { display:none; }
+  #login-gate.visible, #dash-content.visible { display:block; }
+</style>
+</head>
+<body>
+
+<div class="dash-wrap">
+  <div class="dash-header">
+    <img src="assets/img/logo-cf.png" alt="Circoletto FASF">
+    <strong>Gestione eventi</strong>
+    <a href="index.html">← Torna al sito</a>
+  </div>
+
+  <div id="login-gate" class="dash-card">
+    <span class="eyebrow">Accesso riservato</span>
+    <h2 style="margin-top:8px;">Inserisci la password</h2>
+    <p>Questa pagina serve solo a te per pubblicare o rimuovere gli eventi su prenotazione del sito.</p>
+    <div class="form-grid" style="max-width:340px;">
+      <div>
+        <label for="password-input">Password</label>
+        <input type="password" id="password-input" placeholder="••••••••">
+      </div>
+      <button type="button" class="btn btn-gold" id="login-btn">Entra</button>
+      <p class="form-status" id="login-status" role="status" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <div id="dash-content">
+    <div class="dash-card">
+      <span class="eyebrow">Nuovo evento</span>
+      <h2 style="margin-top:8px;">Pubblica un evento su prenotazione</h2>
+      <p>Compare sulla pagina <a href="prenotazioni.html" target="_blank" style="color:var(--gold);">Prenotazioni</a> del sito entro circa un minuto dalla pubblicazione.</p>
+      <form class="form-grid" id="event-form">
+        <div>
+          <label for="ev-titolo">Titolo evento</label>
+          <input type="text" id="ev-titolo" placeholder="Es. Cena Sociale" required>
+        </div>
+        <div>
+          <label for="ev-data">Data (testo libero, come deve apparire)</label>
+          <input type="text" id="ev-data" placeholder="Es. Sabato 30 Agosto" required>
+        </div>
+        <div>
+          <label for="ev-descrizione">Descrizione breve</label>
+          <textarea id="ev-descrizione" placeholder="Cosa include, orario, dove..."></textarea>
+        </div>
+        <div>
+          <label for="ev-posti">Posti disponibili (facoltativo)</label>
+          <input type="text" id="ev-posti" placeholder="Es. 40 posti">
+        </div>
+        <div>
+          <label for="ev-prezzo">Prezzo (facoltativo)</label>
+          <input type="text" id="ev-prezzo" placeholder="Es. 15€ a persona">
+        </div>
+        <button type="submit" class="btn btn-gold">Pubblica evento</button>
+        <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+
+    <div class="dash-card">
+      <span class="eyebrow">Eventi pubblicati</span>
+      <h2 style="margin-top:8px;">Elenco attuale</h2>
+      <p>Rimuovi un evento quando i posti sono esauriti o l'appuntamento è passato.</p>
+      <div id="events-list"><p style="color:var(--muted);">Caricamento…</p></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var DASHBOARD_PASSWORD_KEY = "fasf-dashboard-password";
+  var password = sessionStorage.getItem(DASHBOARD_PASSWORD_KEY) || "";
+
+  var loginGate = document.getElementById("login-gate");
+  var dashContent = document.getElementById("dash-content");
+
+  function showDashboard() {
+    loginGate.classList.remove("visible");
+    dashContent.classList.add("visible");
+    loadEvents();
+  }
+
+  function showLogin() {
+    dashContent.classList.remove("visible");
+    loginGate.classList.add("visible");
+  }
+
+  document.getElementById("login-btn").addEventListener("click", function () {
+    var val = document.getElementById("password-input").value.trim();
+    if (!val) return;
+    password = val;
+    sessionStorage.setItem(DASHBOARD_PASSWORD_KEY, val);
+    showDashboard();
+  });
+
+  document.getElementById("password-input").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") document.getElementById("login-btn").click();
+  });
+
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function loadEvents() {
+    fetch("assets/data/eventi.json?t=" + Date.now())
+      .then(function (r) { return r.json(); })
+      .then(renderEvents)
+      .catch(function () {
+        document.getElementById("events-list").innerHTML = "<p style='color:var(--muted);'>Impossibile caricare l'elenco.</p>";
+      });
+  }
+
+  function renderEvents(events) {
+    var list = document.getElementById("events-list");
+    if (!events || !events.length) {
+      list.innerHTML = "<p style='color:var(--muted);'>Nessun evento pubblicato al momento.</p>";
+      return;
+    }
+    list.innerHTML = "";
+    events.forEach(function (ev) {
+      var row = document.createElement("div");
+      row.className = "event-row";
+      row.innerHTML =
+        '<div class="meta">' +
+          "<strong>" + escapeHtml(ev.titolo) + "</strong>" +
+          "<span>" + escapeHtml(ev.data_label) + (ev.posti ? " · " + escapeHtml(ev.posti) : "") + (ev.prezzo ? " · " + escapeHtml(ev.prezzo) : "") + "</span>" +
+          (ev.descrizione ? "<p>" + escapeHtml(ev.descrizione) + "</p>" : "") +
+        "</div>" +
+        '<button type="button" class="btn btn-danger btn-small" data-id="' + escapeHtml(ev.id) + '">Elimina</button>';
+      row.querySelector("button").addEventListener("click", function () {
+        deleteEvent(ev.id, ev.titolo);
+      });
+      list.appendChild(row);
+    });
+  }
+
+  function deleteEvent(id, titolo) {
+    if (!confirm('Rimuovere "' + titolo + '" dal sito?')) return;
+    fetch("/.netlify/functions/manage-events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: password, action: "delete", id: id }),
+    })
+      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+      .then(function (res) {
+        if (!res.ok) {
+          if (res.data && res.data.error === "Password errata") {
+            alert("Password errata. Verrai reindirizzato al login.");
+            sessionStorage.removeItem(DASHBOARD_PASSWORD_KEY);
+            showLogin();
+            return;
+          }
+          alert("Errore: " + (res.data && res.data.error ? res.data.error : "riprova"));
+          return;
+        }
+        renderEvents(res.data.events);
+      })
+      .catch(function () { alert("Errore di rete, riprova."); });
+  }
+
+  document.getElementById("event-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var status = document.getElementById("form-status");
+    var evento = {
+      titolo: document.getElementById("ev-titolo").value.trim(),
+      data_label: document.getElementById("ev-data").value.trim(),
+      descrizione: document.getElementById("ev-descrizione").value.trim(),
+      posti: document.getElementById("ev-posti").value.trim(),
+      prezzo: document.getElementById("ev-prezzo").value.trim(),
+    };
+    if (!evento.titolo || !evento.data_label) {
+      status.style.color = "#ff8b8b";
+      status.textContent = "Titolo e data sono obbligatori.";
+      return;
+    }
+
+    status.style.color = "var(--gold)";
+    status.textContent = "Pubblicazione in corso…";
+
+    fetch("/.netlify/functions/manage-events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: password, action: "create", evento: evento }),
+    })
+      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+      .then(function (res) {
+        if (!res.ok) {
+          if (res.data && res.data.error === "Password errata") {
+            status.style.color = "#ff8b8b";
+            status.textContent = "Password errata. Verrai reindirizzato al login.";
+            sessionStorage.removeItem(DASHBOARD_PASSWORD_KEY);
+            setTimeout(showLogin, 1200);
+            return;
+          }
+          status.style.color = "#ff8b8b";
+          status.textContent = "Errore: " + (res.data && res.data.error ? res.data.error : "riprova.");
+          return;
+        }
+        status.style.color = "var(--gold)";
+        status.textContent = "Pubblicato! Sarà visibile sul sito entro circa un minuto.";
+        document.getElementById("event-form").reset();
+        renderEvents(res.data.events);
+      })
+      .catch(function () {
+        status.style.color = "#ff8b8b";
+        status.textContent = "Errore di rete, riprova.";
+      });
+  });
+
+  if (password) {
+    showDashboard();
+  } else {
+    showLogin();
+  }
+</script>
+</body>
+</html>

@@ -85,18 +85,9 @@
       <p>Gli eventi a numero limitato compaiono qui non appena sono aperti alle prenotazioni.</p>
     </div>
 
-    <!--
-      TEMPLATE EVENTO — nota per chi aggiorna il sito:
-      per aggiungere un evento prenotabile, sostituisci il riquadro "nessun evento"
-      qui sotto con una o più card così, una per evento:
-
-      <div class="card">
-        <span class="eyebrow">Sabato 30 Agosto</span>
-        <h3>Cena Sociale</h3>
-        <p>Descrizione breve: cosa include, orario, eventuale prezzo a persona.</p>
-        <a class="btn btn-outline" href="#prenota">Prenota →</a>
-      </div>
-    -->
+    <!-- Le card qui sotto sono generate automaticamente da assets/data/eventi.json
+         (gestito dalla dashboard in gestione-eventi.html). Non modificare a mano:
+         le modifiche verrebbero sovrascritte al prossimo aggiornamento. -->
     <div class="grid grid-3" id="prenotazioni-grid">
       <div class="card" style="text-align:center;color:var(--muted);grid-column:1/-1;">
         <span class="icon">🗓️</span>
@@ -107,44 +98,40 @@
     </div>
   </section>
 
-  <section class="alt" id="prenota">
-    <div class="wrap" style="max-width:640px;">
-      <div class="section-head">
-        <span class="eyebrow">Richiesta di prenotazione</span>
-        <h2>Manda la tua richiesta</h2>
-        <p>Scrivi per quale evento vuoi prenotare (anche se non è ancora nell'elenco sopra) e quante persone verranno: ti confermiamo noi il posto scrivendoti o chiamandoti.</p>
-      </div>
-      <form name="prenotazioni" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="/grazie-prenotazione.html" class="form-grid">
-        <input type="hidden" name="form-name" value="prenotazioni">
-        <p style="position:absolute;left:-9999px;">
-          <label>Non compilare questo campo: <input name="bot-field"></label>
-        </p>
-        <div>
-          <label for="r-evento">Per cosa vuoi prenotare</label>
-          <input type="text" id="r-evento" name="evento" placeholder="Es. Cena sociale del 30 agosto" required>
-        </div>
-        <div>
-          <label for="r-nome">Nome e cognome</label>
-          <input type="text" id="r-nome" name="nome" placeholder="Il tuo nome" required>
-        </div>
-        <div>
-          <label for="r-contatto">Telefono o email</label>
-          <input type="text" id="r-contatto" name="contatto" placeholder="Per confermarti il posto" required>
-        </div>
-        <div>
-          <label for="r-persone">Numero di persone</label>
-          <input type="number" id="r-persone" name="persone" min="1" value="1" required>
-        </div>
-        <div>
-          <label for="r-note">Note (facoltativo)</label>
-          <textarea id="r-note" name="note" placeholder="Allergie, intolleranze, richieste particolari..."></textarea>
-        </div>
-        <button type="submit" class="btn btn-gold">Invia prenotazione</button>
-      </form>
-    </div>
-  </section>
-
 </main>
+
+<div class="reserve-modal" id="reserve-modal" hidden>
+  <div class="reserve-modal-backdrop" data-close></div>
+  <div class="reserve-modal-panel">
+    <button type="button" class="reserve-modal-close" data-close aria-label="Chiudi">&times;</button>
+    <span class="eyebrow">Richiesta di prenotazione</span>
+    <h3 id="reserve-modal-title">Prenota il tuo posto</h3>
+    <form name="prenotazioni" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="/grazie-prenotazione.html" class="form-grid">
+      <input type="hidden" name="form-name" value="prenotazioni">
+      <input type="hidden" name="evento" id="reserve-evento-field">
+      <p style="position:absolute;left:-9999px;">
+        <label>Non compilare questo campo: <input name="bot-field"></label>
+      </p>
+      <div>
+        <label for="r-nome">Nome e cognome</label>
+        <input type="text" id="r-nome" name="nome" placeholder="Il tuo nome" required>
+      </div>
+      <div>
+        <label for="r-contatto">Telefono o email</label>
+        <input type="text" id="r-contatto" name="contatto" placeholder="Per confermarti il posto" required>
+      </div>
+      <div>
+        <label for="r-persone">Numero di persone</label>
+        <input type="number" id="r-persone" name="persone" min="1" value="1" required>
+      </div>
+      <div>
+        <label for="r-note">Note (facoltativo)</label>
+        <textarea id="r-note" name="note" placeholder="Allergie, intolleranze, richieste particolari..."></textarea>
+      </div>
+      <button type="submit" class="btn btn-gold">Invia prenotazione</button>
+    </form>
+  </div>
+</div>
 
 <footer class="site-footer">
   <div class="wrap">
@@ -183,5 +170,66 @@
 </footer>
 
 <script src="assets/js/main.js"></script>
+<script>
+  (function () {
+    function escapeHtml(s) {
+      return String(s || "").replace(/[&<>"']/g, function (c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+      });
+    }
+
+    var grid = document.getElementById("prenotazioni-grid");
+    var modal = document.getElementById("reserve-modal");
+    var modalTitle = document.getElementById("reserve-modal-title");
+    var eventoField = document.getElementById("reserve-evento-field");
+
+    function openModal(titolo) {
+      modalTitle.textContent = "Prenota per: " + titolo;
+      eventoField.value = titolo;
+      modal.hidden = false;
+      document.body.classList.add("nav-open");
+    }
+
+    function closeModal() {
+      modal.hidden = true;
+      document.body.classList.remove("nav-open");
+    }
+
+    modal.querySelectorAll("[data-close]").forEach(function (el) {
+      el.addEventListener("click", closeModal);
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !modal.hidden) closeModal();
+    });
+
+    function renderEvents(events) {
+      if (!events || !events.length) return; // resta lo stato vuoto già nell'HTML
+
+      grid.innerHTML = "";
+      events.forEach(function (ev) {
+        var card = document.createElement("div");
+        card.className = "card event-card";
+        card.innerHTML =
+          "<h3>" + escapeHtml(ev.titolo) + "</h3>" +
+          '<div class="event-meta">' +
+            "<span>" + escapeHtml(ev.data_label) + "</span>" +
+            (ev.posti ? "<span>" + escapeHtml(ev.posti) + "</span>" : "") +
+            (ev.prezzo ? "<span>" + escapeHtml(ev.prezzo) + "</span>" : "") +
+          "</div>" +
+          (ev.descrizione ? "<p>" + escapeHtml(ev.descrizione) + "</p>" : "") +
+          '<button type="button" class="btn btn-outline">Prenota →</button>';
+        card.querySelector("button").addEventListener("click", function () {
+          openModal(ev.titolo);
+        });
+        grid.appendChild(card);
+      });
+    }
+
+    fetch("assets/data/eventi.json")
+      .then(function (r) { return r.json(); })
+      .then(renderEvents)
+      .catch(function () {});
+  })();
+</script>
 </body>
 </html>
