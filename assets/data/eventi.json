@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "id": "ev-mu5ct3ni",
+    "titolo": "Test Dashboard",
+    "data_label": "Test",
+    "descrizione": "prova end-to-end",
+    "posti": "",
+    "prezzo": ""
+  }
+]
