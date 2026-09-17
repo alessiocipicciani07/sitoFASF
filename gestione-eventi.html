@@ -67,8 +67,8 @@
           <input type="text" id="ev-titolo" placeholder="Es. Cena Sociale" required>
         </div>
         <div>
-          <label for="ev-data">Data (testo libero, come deve apparire)</label>
-          <input type="text" id="ev-data" placeholder="Es. Sabato 30 Agosto" required>
+          <label for="ev-data">Data dell'evento</label>
+          <input type="date" id="ev-data" required>
         </div>
         <div>
           <label for="ev-descrizione">Descrizione breve</label>
@@ -135,6 +135,16 @@
     });
   }
 
+  // Da "2026-08-30" a "Sabato 30 Agosto 2026" (parsing in locale, non UTC,
+  // per evitare che la data scali di un giorno vicino alla mezzanotte)
+  function formatDataItaliana(isoDate) {
+    if (!isoDate) return "";
+    var parts = isoDate.split("-");
+    var d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    var label = d.toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    return label.replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+  }
+
   function loadEvents() {
     fetch("assets/data/eventi.json?t=" + Date.now())
       .then(function (r) { return r.json(); })
@@ -187,7 +197,7 @@
   function startEdit(ev) {
     editingId = ev.id;
     document.getElementById("ev-titolo").value = ev.titolo || "";
-    document.getElementById("ev-data").value = ev.data_label || "";
+    document.getElementById("ev-data").value = ev.data || "";
     document.getElementById("ev-descrizione").value = ev.descrizione || "";
     document.getElementById("ev-posti").value = ev.posti || "";
     document.getElementById("ev-prezzo").value = ev.prezzo || "";
@@ -237,14 +247,16 @@
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     var status = document.getElementById("form-status");
+    var dataIso = document.getElementById("ev-data").value;
     var evento = {
       titolo: document.getElementById("ev-titolo").value.trim(),
-      data_label: document.getElementById("ev-data").value.trim(),
+      data: dataIso,
+      data_label: formatDataItaliana(dataIso),
       descrizione: document.getElementById("ev-descrizione").value.trim(),
       posti: document.getElementById("ev-posti").value.trim(),
       prezzo: document.getElementById("ev-prezzo").value.trim(),
     };
-    if (!evento.titolo || !evento.data_label) {
+    if (!evento.titolo || !evento.data) {
       status.style.color = "#ff8b8b";
       status.textContent = "Titolo e data sono obbligatori.";
       return;

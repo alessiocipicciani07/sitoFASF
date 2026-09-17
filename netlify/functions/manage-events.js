@@ -72,14 +72,15 @@ exports.handler = async (event) => {
   let commitMessage;
 
   if (action === "create") {
-    if (!evento || !evento.titolo || !evento.data_label) {
+    if (!evento || !evento.titolo || !evento.data) {
       return jsonResponse(400, { error: "Titolo e data sono obbligatori" });
     }
     const newId = "ev-" + Date.now().toString(36);
     events.push({
       id: newId,
       titolo: evento.titolo,
-      data_label: evento.data_label,
+      data: evento.data,
+      data_label: evento.data_label || evento.data,
       descrizione: evento.descrizione || "",
       posti: evento.posti || "",
       prezzo: evento.prezzo || "",
@@ -91,7 +92,8 @@ exports.handler = async (event) => {
     events[idx] = {
       ...events[idx],
       titolo: evento.titolo,
-      data_label: evento.data_label,
+      data: evento.data,
+      data_label: evento.data_label || evento.data,
       descrizione: evento.descrizione || "",
       posti: evento.posti || "",
       prezzo: evento.prezzo || "",
