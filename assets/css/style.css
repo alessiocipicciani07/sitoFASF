@@ -1406,7 +1406,20 @@ html { scrollbar-color: var(--gold-deep) var(--navy-deep); scrollbar-width: thin
   }
 }
 
-/* ---------- reveal on scroll (attivato via JS) ---------- */
+/* ---------- barra di progresso scroll ---------- */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--gold-deep), var(--gold-bright));
+  box-shadow: 0 0 12px rgba(244,201,59,.5);
+  z-index: 400;
+  pointer-events: none;
+}
+
+/* ---------- reveal on scroll (attivato via JS): un ingresso per tipo ---------- */
 .reveal { opacity: 0; }
 
 .reveal.in-view {
@@ -1418,9 +1431,67 @@ html { scrollbar-color: var(--gold-deep) var(--navy-deep); scrollbar-width: thin
   to   { opacity: 1; transform: translateY(0); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .reveal { opacity: 1; }
+/* titoli di sezione: maschera a tendina che si apre */
+.reveal-mask { opacity: 0; clip-path: inset(0 0 100% 0); transform: translateY(10px); }
+
+.reveal-mask.in-view {
+  animation: revealMask 1s cubic-bezier(.16,.8,.3,1) both;
 }
+
+@keyframes revealMask {
+  from { opacity: 0; clip-path: inset(0 0 100% 0); transform: translateY(10px); }
+  to   { opacity: 1; clip-path: inset(0 0 0% 0); transform: translateY(0); }
+}
+
+/* card: piccolo "pop" con scala e rotazione minima */
+.reveal-pop { opacity: 0; }
+
+.reveal-pop.in-view {
+  animation: revealPop .75s cubic-bezier(.34,1.35,.64,1) both;
+}
+
+@keyframes revealPop {
+  from { opacity: 0; transform: scale(.93) translateY(22px) rotate(-.6deg); }
+  to   { opacity: 1; transform: scale(1) translateY(0) rotate(0); }
+}
+
+/* liste (programma, spazi, menu): scivolano da sinistra */
+.reveal-slide { opacity: 0; }
+
+.reveal-slide.in-view {
+  animation: revealSlide .8s cubic-bezier(.16,.8,.3,1) both;
+}
+
+@keyframes revealSlide {
+  from { opacity: 0; transform: translateX(-26px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal-mask, .reveal-pop, .reveal-slide {
+    opacity: 1;
+    clip-path: none;
+    transform: none;
+    animation: none;
+  }
+  .scroll-progress { display: none; }
+}
+
+/* ---------- card: bordo "spotlight" che segue il cursore ---------- */
+.card { position: relative; }
+
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(240px circle at var(--spot-x, 50%) var(--spot-y, 50%), rgba(244,201,59,.14), transparent 70%);
+  opacity: 0;
+  transition: opacity .3s ease;
+  pointer-events: none;
+}
+
+.card:hover::after { opacity: 1; }
 
 /* ---------- programma: hover discreto ---------- */
 .program-row {

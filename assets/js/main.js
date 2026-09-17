@@ -40,14 +40,37 @@ document.addEventListener("DOMContentLoaded", function () {
     window.addEventListener("scroll", onHeaderScroll, { passive: true });
   }
 
-  // ---------- reveal on scroll ----------
+  // ---------- barra di progresso scroll ----------
+  if (!reduceMotion) {
+    var progressBar = document.createElement("div");
+    progressBar.className = "scroll-progress";
+    progressBar.setAttribute("aria-hidden", "true");
+    document.body.appendChild(progressBar);
+    var updateProgress = function () {
+      var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      var pct = docHeight > 0 ? (window.scrollY / docHeight) * 100 : 0;
+      progressBar.style.width = Math.min(100, Math.max(0, pct)) + "%";
+    };
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    window.addEventListener("resize", updateProgress);
+    updateProgress();
+  }
+
+  // ---------- reveal on scroll: un ingresso diverso per ogni tipo di elemento ----------
   if (!reduceMotion && "IntersectionObserver" in window) {
-    var revealTargets = document.querySelectorAll(
-      "h2, .card, blockquote, .program-row, .timeline-item, .gallery-item, .spazi-list li, .info-strip .item"
-    );
-    revealTargets.forEach(function (el, i) {
-      el.classList.add("reveal");
-      el.style.animationDelay = (Math.min(i % 6, 5) * 0.06) + "s";
+    var revealConfig = [
+      { selector: "h2", cls: "reveal-mask" },
+      { selector: ".card, .sponsor-card, .event-card", cls: "reveal-pop" },
+      { selector: ".program-row, .spazi-list li, .info-strip .item, .menu-list li", cls: "reveal-slide" },
+      { selector: "blockquote, .timeline-item, .gallery-item", cls: "reveal" }
+    ];
+    var allRevealEls = [];
+    revealConfig.forEach(function (cfg) {
+      document.querySelectorAll(cfg.selector).forEach(function (el, i) {
+        el.classList.add(cfg.cls);
+        el.style.animationDelay = (Math.min(i % 7, 6) * 0.07) + "s";
+        allRevealEls.push(el);
+      });
     });
 
     var io = new IntersectionObserver(
@@ -61,7 +84,45 @@ document.addEventListener("DOMContentLoaded", function () {
       },
       { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
     );
-    revealTargets.forEach(function (el) { io.observe(el); });
+    allRevealEls.forEach(function (el) { io.observe(el); });
+  }
+
+  // ---------- numeri che contano verso l'alto quando entrano in vista ----------
+  if (!reduceMotion && "IntersectionObserver" in window) {
+    var counters = document.querySelectorAll(".floating-badge strong");
+    var ioCounter = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        var el = entry.target;
+        var target = parseInt(el.textContent, 10);
+        if (isNaN(target)) return;
+        var startVal = Math.max(0, target - 60);
+        var start = null;
+        var duration = 1300;
+        function step(ts) {
+          if (!start) start = ts;
+          var progress = Math.min((ts - start) / duration, 1);
+          var eased = 1 - Math.pow(1 - progress, 3);
+          el.textContent = Math.round(startVal + (target - startVal) * eased);
+          if (progress < 1) requestAnimationFrame(step);
+          else el.textContent = target;
+        }
+        requestAnimationFrame(step);
+        ioCounter.unobserve(el);
+      });
+    }, { threshold: 0.5 });
+    counters.forEach(function (el) { ioCounter.observe(el); });
+  }
+
+  // ---------- bordo "spotlight" sulle card al passaggio del mouse ----------
+  if (!reduceMotion && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    document.querySelectorAll(".card").forEach(function (card) {
+      card.addEventListener("mousemove", function (e) {
+        var rect = card.getBoundingClientRect();
+        card.style.setProperty("--spot-x", (e.clientX - rect.left) + "px");
+        card.style.setProperty("--spot-y", (e.clientY - rect.top) + "px");
+      });
+    });
   }
 
   // ---------- titolo hero: rivelazione parola per parola ----------
@@ -314,7 +375,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // ---------- rivelazione a tendina delle immagini ----------
   if (!reduceMotion && "IntersectionObserver" in window) {
-    var curtainEls = document.querySelectorAll(".two-col img, .map-wrap img");
+    var curtainEls = document.querySelectorAll(".two-col img, .map-wrap img, .photo-frame img");
     curtainEls.forEach(function (el) { el.classList.add("img-reveal"); });
 
     var ioImg = new IntersectionObserver(
