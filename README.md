@@ -6,41 +6,47 @@ Sito statico (HTML/CSS/JS puri, nessuna build, nessuna dipendenza da installare)
 
 ```
 25_Sito_Web_CircolettoFASF/
-├── index.html                   Home — Circoletto FASF
+├── index.html                    Home
 ├── chi-siamo.html                Storia del circolo + intervista al presidente
-├── spazi.html                    Il parco: planimetria e aree
+├── spazi.html                    Il parco: planimetria interattiva e aree
 ├── sant-egidio-in-festa.html     Programma completo 2026 + mappa
-├── galleria.html                 Foto reali per tutte le 10 serate (28/08 → 06/09) + link a ogni gallery Lightroom completa
+├── galleria.html                 Foto reali per tutte le 10 serate + link alle gallery Lightroom
 ├── calendario.html               Appuntamenti FASF durante l'anno
-├── sponsor.html                  Sponsor della festa (placeholder)
+├── prenotazioni.html             Eventi su prenotazione (letti da assets/data/eventi.json)
+├── sponsor.html                  Sponsor della festa
 ├── contatti.html                 Form di contatto + crediti
+├── gestione-eventi.html          Dashboard nascosta (non linkata, noindex) per creare/modificare/eliminare eventi
+├── grazie-prenotazione.html      Pagina di conferma dopo una prenotazione
+├── 404.html                      Pagina "non trovata"
+├── robots.txt, sitemap.xml       Per i motori di ricerca
+├── netlify.toml                  Configurazione Netlify (cartella funzioni, intestazioni)
+├── netlify/functions/manage-events.js   Funzione che salva gli eventi della dashboard su GitHub
 └── assets/
     ├── css/style.css
     ├── js/main.js
+    ├── data/eventi.json          Elenco eventi prenotabili (scritto dalla dashboard)
     └── img/
-        ├── galleria/thumbs/      160 miniature (16 per serata × 10 serate, ~640px, per la griglia)
+        ├── galleria/thumbs/      160 miniature (~640px, per la griglia)
         ├── galleria/full/        160 foto a risoluzione maggiore (~1600px, aperte al click)
-        └── ...                   loghi ufficiali, planimetria, foto
+        ├── sponsor/              loghi sponsor
+        └── ...                   loghi ufficiali (logo-cf-sm/md = versioni leggere), hero, planimetria
 ```
 
-## Come vederlo
+## Come funziona la pubblicazione
 
-Basta aprire `index.html` in un browser (doppio click). Non serve un server: tutti i link sono relativi e le immagini sono locali.
+Il sito è su **Netlify** (https://circolettofasf.netlify.app) collegato al repository GitHub `alessiocipicciani07/sitoFASF`: ogni `git push` su `main` ripubblica il sito in automatico, senza nessuna build. Anche la dashboard eventi lavora così: salva su GitHub e Netlify ripubblica.
 
-## Come pubblicarlo online
+In locale basta avviare un piccolo server nella cartella (`python3 -m http.server`) e aprire `http://localhost:8000`: la lettura degli eventi (`fetch`) non funziona aprendo il file con doppio click.
 
-È un sito statico: si può caricare così com'è su qualsiasi hosting statico gratuito, ad esempio:
-- **Netlify** o **Vercel**: trascina la cartella nella dashboard
-- **GitHub Pages**: metti questi file in un repository e attiva Pages
-- Qualsiasi hosting condiviso classico (basta caricare via FTP)
+## Form (Netlify Forms)
 
-## Cosa va ancora completato prima di andare online
+- **Prenotazioni** (`prenotazioni.html`, form `prenotazioni`) e **Contatti** (`contatti.html`, form `contatti`) arrivano nella dashboard di Netlify → *Forms*. Per riceverli anche via email: Netlify → *Forms* → *Form notifications* → *Add notification* → *Email notification*.
+- Il dominio `circolettofasf.netlify.app` compare in `canonical`, `og:url`, `og:image`, `robots.txt` e `sitemap.xml`. Se in futuro si collega un dominio proprio, va sostituito in quei file (cerca e sostituisci).
 
-1. **Sponsor** (`sponsor.html`) — i riquadri "Logo sponsor" sono placeholder da sostituire con i loghi reali (istruzioni in un commento HTML nel file). Non ho inserito nomi specifici perché non avevo conferma di quali sponsor 2026 fossero già confermati.
-2. **Email di contatto** (`contatti.html`) — il modulo apre attualmente un'email a `info@circolettofasf.it`, un indirizzo segnaposto. Cercalo nel file (`mailto:info@circolettofasf.it`) e sostituiscilo con l'indirizzo email reale del circolo.
-3. **Calendario eventi FASF** (`calendario.html`) — contiene solo Sant'Egidio in Festa 2026, l'unico evento con date confermate. Aggiungi qui gli altri appuntamenti dell'anno quando li pianificate.
+## Da completare / tenere aggiornato
 
-La galleria fotografica è completa: tutte le 10 serate sono a posto.
+1. **Calendario eventi FASF** (`calendario.html`) — contiene solo Sant'Egidio in Festa 2026. Aggiungi gli altri appuntamenti dell'anno quando li pianificate.
+2. **Edizione 2026 conclusa** — le date "28 agosto — 6 settembre 2026" compaiono in home, nel menu, nelle meta description e nella pagina del programma; vanno riviste in vista della prossima edizione.
 
 ## Contenuti reali già usati
 

@@ -6,16 +6,20 @@
 <title>Contatti — Circoletto FASF</title>
 <meta name="description" content="Contatta il Circoletto FASF: band, sponsor e associazioni per Sant'Egidio in Festa.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://circolettofasf.netlify.app/contatti.html">
+<meta property="og:site_name" content="Circoletto FASF">
 <meta property="og:title" content="Contatti — Circoletto FASF">
 <meta property="og:description" content="Contatta il Circoletto FASF: band, sponsor e associazioni per Sant'Egidio in Festa.">
-<meta property="og:image" content="assets/img/hero-contatti.jpg">
+<meta property="og:image" content="https://circolettofasf.netlify.app/assets/img/hero-contatti.jpg">
 <meta property="og:locale" content="it_IT">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Contatti — Circoletto FASF">
 <meta name="twitter:description" content="Contatta il Circoletto FASF: band, sponsor e associazioni per Sant'Egidio in Festa.">
-<meta name="twitter:image" content="assets/img/hero-contatti.jpg">
+<meta name="twitter:image" content="https://circolettofasf.netlify.app/assets/img/hero-contatti.jpg">
 
-<link rel="icon" href="assets/img/logo-cf.png">
+<link rel="canonical" href="https://circolettofasf.netlify.app/contatti.html">
+<link rel="icon" type="image/png" href="assets/img/favicon-64.png">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;0,900;1,400;1,500;1,600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -27,7 +31,7 @@
 <header class="site-header">
   <nav class="nav wrap">
     <a class="nav-brand" href="index.html">
-      <img src="assets/img/logo-cf.png" alt="Circoletto FASF">
+      <img src="assets/img/logo-cf-sm.png" alt="Circoletto FASF" width="38" height="38">
       Circoletto FASF
     </a>
     <button class="nav-toggle" aria-label="Apri menu" aria-expanded="false" aria-controls="site-menu">
@@ -80,7 +84,11 @@
 
   <section class="wrap two-col">
     <div>
-      <form class="form-grid" id="contact-form">
+      <form class="form-grid" id="contact-form" name="contatti" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+        <input type="hidden" name="form-name" value="contatti">
+        <p style="position:absolute;left:-9999px;" aria-hidden="true">
+          <label>Non compilare questo campo: <input name="bot-field" tabindex="-1" autocomplete="off"></label>
+        </p>
         <div>
           <label for="tipo">Scrivo come</label>
           <select id="tipo" name="tipo">
@@ -169,28 +177,43 @@
 
 <script src="assets/js/main.js"></script>
 <script>
-  // Invio semplice via mailto (nessun backend). Sostituire l'indirizzo con quello reale del circolo.
-  document.getElementById("contact-form").addEventListener("submit", function (e) {
-    e.preventDefault();
+  // Invio del messaggio via Netlify Forms: arriva nella dashboard di Netlify (sezione Forms) e,
+  // se configurata, anche come notifica email. Nessun indirizzo da tenere nel codice.
+  (function () {
+    var form = document.getElementById("contact-form");
     var status = document.getElementById("form-status");
-    var tipo = document.getElementById("tipo").value;
-    var nome = document.getElementById("nome").value.trim();
-    var email = document.getElementById("email").value.trim();
-    var messaggio = document.getElementById("messaggio").value.trim();
+    var submit = form.querySelector("button[type=submit]");
 
-    if (!nome || !email || !messaggio) {
-      status.textContent = "Compila nome, email e messaggio prima di inviare.";
-      status.style.color = "#ff8b8b";
-      return;
+    function say(text, ok) {
+      status.textContent = text;
+      status.style.color = ok ? "var(--gold)" : "#ff8b8b";
     }
 
-    var subject = encodeURIComponent("[Sito FASF] Contatto: " + tipo);
-    var body = encodeURIComponent("Nome: " + nome + "\nEmail: " + email + "\n\n" + messaggio);
-    window.location.href = "mailto:info@circolettofasf.it?subject=" + subject + "&body=" + body;
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (!form.checkValidity()) {
+        say("Compila nome, email e messaggio prima di inviare.", false);
+        return;
+      }
+      submit.disabled = true;
+      say("Invio in corso…", true);
 
-    status.style.color = "var(--gold)";
-    status.textContent = "Si sta aprendo il tuo programma di posta con il messaggio già pronto.";
-  });
+      fetch("/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(new FormData(form)).toString()
+      })
+        .then(function (r) {
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          form.reset();
+          say("Messaggio inviato. Grazie, ti rispondiamo appena possibile.", true);
+        })
+        .catch(function () {
+          say("Non siamo riusciti a inviare il messaggio. Riprova tra poco, oppure scrivici su Instagram: @fasf.borgotrevi.", false);
+        })
+        .then(function () { submit.disabled = false; });
+    });
+  })();
 </script>
 </body>
 </html>

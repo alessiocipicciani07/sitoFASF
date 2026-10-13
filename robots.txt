@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://circolettofasf.netlify.app/sitemap.xml

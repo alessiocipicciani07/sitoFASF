@@ -19,3 +19,16 @@
   #  publish = "dist" # Folder with the static content for _redirect file
 
   ## more info on configuring this file: https://ntl.fyi/file-based-build-config
+
+# Intestazioni di sicurezza + cache leggera per le immagini
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/assets/img/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"

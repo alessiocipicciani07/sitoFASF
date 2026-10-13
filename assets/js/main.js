@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // ---------- numeri che contano verso l'alto quando entrano in vista ----------
   if (!reduceMotion && "IntersectionObserver" in window) {
-    var counters = document.querySelectorAll(".floating-badge strong");
+    var counters = document.querySelectorAll(".floating-badge strong[data-count]");
     var ioCounter = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;

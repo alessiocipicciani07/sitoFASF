@@ -539,6 +539,28 @@ section.alt {
   position: relative;
 }
 
+/* foto larga con didascalia (es. lo staff in "Chi siamo") */
+.wide-photo {
+  max-width: 980px;
+  margin: 0 auto 48px;
+}
+
+.wide-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid rgba(244,201,59,.25);
+  box-shadow: 0 28px 60px -28px rgba(3,6,20,.8);
+}
+
+.wide-photo figcaption {
+  margin-top: 12px;
+  font-size: .85rem;
+  color: var(--muted);
+  text-align: center;
+}
+
 .floating-badge {
   position: absolute;
   bottom: -22px;
