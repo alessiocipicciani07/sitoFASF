@@ -534,6 +534,58 @@ section.alt {
   margin: 0 0 56px;
 }
 
+/* ---------- sezione "Grazie" (dopo la festa) ---------- */
+.thanks {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  padding: 150px 0 140px;
+  text-align: center;
+}
+
+.thanks-bg,
+.thanks-overlay {
+  position: absolute;
+  inset: 0;
+}
+
+.thanks-bg { z-index: -2; }
+
+.thanks-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 40%;
+}
+
+.thanks-overlay {
+  z-index: -1;
+  background:
+    radial-gradient(ellipse at 50% 55%, rgba(5,10,36,.5) 0%, rgba(5,10,36,.86) 72%),
+    linear-gradient(180deg, var(--navy-deep) 0%, transparent 20%, transparent 78%, var(--navy-deep) 100%);
+}
+
+.thanks h2 {
+  font-size: clamp(2.8rem, 8vw, 5.8rem);
+  line-height: 1.02;
+  margin-bottom: 28px;
+}
+
+.thanks p {
+  max-width: 620px;
+  margin: 0 auto 16px;
+  color: var(--white);
+  font-size: 1.08rem;
+}
+
+.thanks-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 34px;
+}
+
 /* ---------- foto con badge sovrapposto ---------- */
 .photo-frame {
   position: relative;

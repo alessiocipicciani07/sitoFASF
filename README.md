@@ -46,7 +46,7 @@ In locale basta avviare un piccolo server nella cartella (`python3 -m http.serve
 ## Da completare / tenere aggiornato
 
 1. **Calendario eventi FASF** (`calendario.html`) — contiene solo Sant'Egidio in Festa 2026. Aggiungi gli altri appuntamenti dell'anno quando li pianificate.
-2. **Edizione 2026 conclusa** — le date "28 agosto — 6 settembre 2026" compaiono in home, nel menu, nelle meta description e nella pagina del programma; vanno riviste in vista della prossima edizione.
+2. **Versione "Grazie" (ottobre 2026)** — dopo la festa il sito mostra la sezione "Grazie. Ci vediamo nel 2027." in home, la pagina del programma come archivio e il calendario con la card 2027 "date da annunciare". Quando escono le date della prossima edizione: aggiornare la card 2027 in `calendario.html`, la sezione `.thanks` in `index.html` e il programma in `sant-egidio-in-festa.html`. Per vedere com'era prima, cerca nello storico git il commit precedente a "Versione Grazie".
 
 ## Contenuti reali già usati
 
